@@ -744,7 +744,7 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 				  "full_name", message.full_name()
 	);
 
-	printer.Print("class `name` {\n",
+	printer.Print("class `name` implements Protobuf_Interface {\n",
 				  "name", ClassName(message)
 	);
 	printer.Indent();

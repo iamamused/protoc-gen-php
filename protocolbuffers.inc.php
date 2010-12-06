@@ -1,5 +1,14 @@
 <?php
 
+interface Protobuf_Interface {
+  public function __construct($in = NULL, &$limit = PHP_INT_MAX);
+  public function read($fp, &$limit = PHP_INT_MAX);
+  public function write($fp);
+  public function size();
+  public function validateRequired();
+  public function __toString();
+}
+
 class Protobuf_Enum {
 
 	public static function toString($value) {
