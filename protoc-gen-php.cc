@@ -1016,9 +1016,19 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 	try {
 		printer.Print(
 			"<?php\n"
-			"// Please include the below file before `filename`\n"
-			"//require('protocolbuffers.inc.php');\n",
-			"filename", php_filename.c_str()
+			"/** \n"
+			" * PHP Protocol Buffers generated from `filename`\n"
+			" *\n"
+			" * @category   Protobuf\n"
+			" * @package    PACKAGE_NAME\n"
+			" * @author     Andrew Brampton https://github.com/bramp\n"
+			" * @author     Jeffrey Sambells <jsambells@wecreate.com>\n"
+			" * @link       http://github.com/iamamused/protoc-gen-php\n"
+			" */\n"
+			"\n"
+			"/** @see Protobuf */\n"
+			"require_once 'Protobuf.php';\n",
+			"filename", file->name().c_str()
 		);
 
 		if (!namespace_.empty()) {
