@@ -5,8 +5,8 @@ package tutorial;
 option java_package = "com.example.tutorial";
 option java_outer_classname = "AddressBookProtos";
 
-option php_package = "com.example.tutorial";
-option php_outer_classname = "AddressBookProtos";
+//option php_package = "com.example.tutorial";
+//option php_outer_classname = "AddressBookProtos";
 
 message Person {
   required string name = 1;
