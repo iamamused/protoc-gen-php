@@ -78,7 +78,7 @@ class PHPCodeGenerator : public CodeGenerator {
 PHPCodeGenerator::PHPCodeGenerator() {}
 PHPCodeGenerator::~PHPCodeGenerator() {}
 
-string UnderscoresToCamelCaseImpl(const string& input, bool cap_next_letter) {
+string NonAlphaNumToCamelCaseImpl(const string& input, bool cap_next_letter, bool allow_underscore) {
   string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
@@ -102,6 +102,9 @@ string UnderscoresToCamelCaseImpl(const string& input, bool cap_next_letter) {
     } else if ('0' <= input[i] && input[i] <= '9') {
       result += input[i];
       cap_next_letter = true;
+    } else if ( allow_underscore && '_' == input[i]) {
+      result += input[i];
+      cap_next_letter = true;
     } else {
       cap_next_letter = true;
     }
@@ -109,12 +112,12 @@ string UnderscoresToCamelCaseImpl(const string& input, bool cap_next_letter) {
   return result;
 }
 
-string UnderscoresToCamelCase(const FieldDescriptor & field) {
-  return UnderscoresToCamelCaseImpl(field.name(), false);
+string NonAlphaNumToCamelCase(const FieldDescriptor & field) {
+  return NonAlphaNumToCamelCaseImpl(field.name(), false, false);
 }
 
-string UnderscoresToCapitalizedCamelCase(const FieldDescriptor & field) {
-  return UnderscoresToCamelCaseImpl(field.name(), true);
+string NonAlphaNumToCapitalizedCamelCase(const FieldDescriptor & field) {
+  return NonAlphaNumToCamelCaseImpl(field.name(), true, false);
 }
 
 string LowerString(const string & s) {
@@ -138,7 +141,7 @@ string PHPCodeGenerator::ClassName(const DescriptorType & descriptor) const {
 }
 
 string PHPCodeGenerator::VariableName(const FieldDescriptor & field) const {
-	return UnderscoresToCamelCase(field) + '_';
+	return NonAlphaNumToCamelCase(field) + '_';
 }
 
 string PHPCodeGenerator::DefaultValueAsString(const FieldDescriptor & field, bool quote_string_type) const {
@@ -849,7 +852,7 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 
 		map<string, string> variables;
 		variables["name"]             = VariableName(field);
-		variables["capitalized_name"] = UnderscoresToCapitalizedCamelCase(field);
+		variables["capitalized_name"] = NonAlphaNumToCapitalizedCamelCase(field);
 		variables["default"]          = DefaultValueAsString(field, true);
 		variables["comment"]          = field.DebugString();
 
@@ -997,7 +1000,7 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 				OutputDirectory* output_directory,
 				string* error) const {
 
-	string php_filename ( file->name() + ".php" );
+	string php_filename ( NonAlphaNumToCamelCaseImpl( file->name(), true, true ) + ".php" );
 
 	// Parse the options
 	const PHPFileOptions & options ( file->options().GetExtension(php) );
