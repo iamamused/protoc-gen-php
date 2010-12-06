@@ -1,6 +1,6 @@
 <?php
 
-class ProtobufEnum {
+class Protobuf_Enum {
 
 	public static function toString($value) {
 		if (is_null($value))
@@ -11,7 +11,7 @@ class ProtobufEnum {
 	}
 }
 
-class ProtobufMessage {
+class Protobuf_Message {
 
 	function __construct($fp = NULL, &$limit = PHP_INT_MAX) {
 		if($fp !== NULL) {
