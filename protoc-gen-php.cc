@@ -1020,7 +1020,7 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 			" * PHP Protocol Buffers generated from `filename`\n"
 			" *\n"
 			" * @category   Protobuf\n"
-			" * @package    PACKAGE_NAME\n"
+			" * @package    `package`\n"
 			" * @author     Andrew Brampton https://github.com/bramp\n"
 			" * @author     Jeffrey Sambells <jsambells@wecreate.com>\n"
 			" * @link       http://github.com/iamamused/protoc-gen-php\n"
@@ -1028,7 +1028,8 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 			"\n"
 			"/** @see Protobuf */\n"
 			"require_once 'Protobuf.php';\n",
-			"filename", file->name().c_str()
+			"filename", file->name().c_str(),
+			"package", file->package().c_str()
 		);
 
 		if (!namespace_.empty()) {
