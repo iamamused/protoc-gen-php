@@ -1093,26 +1093,11 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 
 	try {
 
-        if (!php_multiple_files_) {
-            PrintHeader    (printer, *file);
-            PrintMessages  (printer, *file);
-		    PrintEnums     (printer, *file);
-		    PrintServices  (printer, *file);
-            PrintFooter    (printer, *file);
-        } else {
-            PrintHeader    (printer, *file);
-            for (int i = 0; i < file->message_type_count(); ++i) {
-                PrintMessage(printer, *file->message_type(i));
-            }
-            for (int i = 0; i < file->enum_type_count(); ++i) {
-                PrintEnum(printer, *file->enum_type(i) );
-            }
-            for (int i = 0; i < file->service_count(); ++i) {
-                printer.Print("////\n//TODO Service\n////\n");
-            }
-            PrintFooter    (printer, *file);
-        }
-		
+        PrintHeader    (printer, *file);
+        PrintMessages  (printer, *file);
+        PrintEnums     (printer, *file);
+        PrintServices  (printer, *file);
+        PrintFooter    (printer, *file);
 
 	} catch (const char *msg) {
 		error->assign( msg );
