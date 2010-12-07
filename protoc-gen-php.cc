@@ -1075,11 +1075,12 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 	string php_filename ( NonAlphaNumToCamelCaseImpl( file->name(), true, true ) + ".php" );
 
 	// Parse the options
-	//const PHPFileOptions & options ( file->options().GetExtension(php) );
-	//const string & namespace_ (options.namespace_());
-	//const string & php_package_ ( file->options().GetExtension(php_package) );
-    //const string & package_ ( php_package_.empty() ? file->package() : php_package_ );
-	//bool php_multiple_files_ = file->options().GetExtension(php_multiple_files);
+	const PHPFileOptions & options ( file->options().GetExtension(php) );
+	const string & namespace_ (options.namespace_());
+	const string & php_package_ ( file->options().GetExtension(php_package) );
+    const string & package_ ( php_package_.empty() ? file->package() : php_package_ );
+
+	bool php_multiple_files_ = file->options().GetExtension(php_multiple_files);
 
 
 	// Generate main file.

@@ -48,24 +48,32 @@ message AddressBook {
     
     
     public static function tearDownAfterClass() {
-        $return = '';
-        system('cd ' . dirname( __FILE__ ) .';', $return);
-        system('make clean;', $return);
+        $return = ''; $out = array();
+        exec('cd ' . escapeshellarg(dirname( __FILE__ )) .';', $out, $return);
+        exec('make clean;', $return);
         unlink('AddressbookProto.php');
         unlink('addressbook.proto');
     }
     
     public function testMake() {
-        $return = '';
-        system('cd ' . dirname( __FILE__ ) .';', $return);
-        system('make clean;', $return);
-        system('make;', $return);
+        $return = ''; $out = array();
+        exec('cd ' . escapeshellarg(dirname( __FILE__ )) .';', $out, $return);
+        exec('make clean;', $out, $return);
+        exec('make;', $out, $return);
+        
+        $out = join("\n",$out);
+        
+        if (stristr(' warning:') || stristr(' error:')) {
+            echo $out;
+                $this->assertTrue(FALSE, $out);
+        }
+        
     }
 
     public function testBuild() {
-        $return = '';
-        system('cd ' . dirname( __FILE__ ) .';', $return);
-        system('protoc -I. -I/usr/include -I/usr/include -I/usr/local/include --php_out . --plugin=protoc-gen-php=./protoc-gen-php addressbook.proto;', $return);
+        $return = ''; $out = array();
+        exec('cd ' . escapeshellarg(dirname( __FILE__ )) .';', $out, $return);
+        exec('protoc -I. -I/usr/include -I/usr/include -I/usr/local/include --php_out . --plugin=protoc-gen-php=./protoc-gen-php addressbook.proto;', $out, $return);
     }
     
     public function testUsage() {
