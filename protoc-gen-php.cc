@@ -48,6 +48,9 @@ class PHPCodeGenerator : public CodeGenerator {
 
 		void PrintService   (io::Printer &printer, const ServiceDescriptor & service) const;
 		void PrintServices  (io::Printer &printer, const FileDescriptor & file) const;
+		
+		void PrintHeader    (io::Printer &printer, const FileDescriptor & file) const;
+        void PrintFooter    (io::Printer &printer, const FileDescriptor & file) const;
 
 		string DefaultValueAsString(const FieldDescriptor & field, bool quote_string_type) const;
 
@@ -192,7 +195,7 @@ void PHPCodeGenerator::PrintMessageRead(io::Printer &printer, const Descriptor &
 	const PHPFileOptions & options ( message.file()->options().GetExtension(php) );
 	bool skip_unknown = options.skip_unknown();
 	const char * pb_namespace = options.namespace_().empty() ? "" : "\\";
-
+	
 	// Read
 	printer.Print(
 		"\n"
@@ -465,7 +468,7 @@ void PHPCodeGenerator::PrintMessageWrite(io::Printer &printer, const Descriptor 
 	// Parse the file options
 	const PHPFileOptions & options ( message.file()->options().GetExtension(php) );
 	const char * pb_namespace = options.namespace_().empty() ? "" : "\\";
-
+	
 	// Write
 	printer.Print(
 		"\n"
@@ -605,7 +608,7 @@ void PHPCodeGenerator::PrintMessageSize(io::Printer &printer, const Descriptor &
 	// Parse the file options
 	const PHPFileOptions & options ( message.file()->options().GetExtension(php) );
 	const char * pb_namespace = options.namespace_().empty() ? "" : "\\";
-
+	
 	// Print the calc size method
 	printer.Print(
 		"\n"
@@ -707,7 +710,7 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 	const PHPFileOptions & options ( message.file()->options().GetExtension(php) );
 	bool skip_unknown = options.skip_unknown();
 	const char * pb_namespace = options.namespace_().empty() ? "" : "\\";
-
+	
 	vector<const FieldDescriptor *> required_fields;
 
 	// Print nested messages
@@ -945,6 +948,8 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 
 	printer.Outdent();
 	printer.Print("}\n\n");
+	
+	
 }
 
 void PHPCodeGenerator::PrintEnum(io::Printer &printer, const EnumDescriptor & e) const {
@@ -1015,6 +1020,54 @@ void PHPCodeGenerator::PrintServices(io::Printer &printer, const FileDescriptor 
 	}
 }
 
+
+void PHPCodeGenerator::PrintHeader(io::Printer &printer, const FileDescriptor & file) const {
+	// Parse the options
+	const PHPFileOptions & options ( file.options().GetExtension(php) );
+	const string & namespace_ (options.namespace_());
+	const string & php_package_ ( file.options().GetExtension(php_package) );
+    const string & package_ ( php_package_.empty() ? file.package() : php_package_ );
+
+    printer.Print(
+        "<?php\n"
+        "/** \n"
+        " * PHP Protocol Buffers generated from `filename`\n"
+        " *\n"
+        " * @category   Protobuf\n"
+        " * @package    `package`\n"
+        " * @author     Andrew Brampton https://github.com/bramp\n"
+        " * @author     Jeffrey Sambells <jsambells@wecreate.com>\n"
+        " * @link       http://github.com/iamamused/protoc-gen-php\n"
+        " */\n"
+        "\n"
+        "/** @see Protobuf */\n"
+        "require_once 'Protobuf.php';\n",
+        "filename", file.name().c_str(),
+        "package", package_.c_str()
+    );
+    
+    if (!namespace_.empty()) {
+        printer.Print("namespace `ns` {\n", "ns", namespace_.c_str());
+        printer.Indent();
+    }
+
+
+}
+
+void PHPCodeGenerator::PrintFooter(io::Printer &printer, const FileDescriptor & file) const {
+
+	// Parse the options
+	const PHPFileOptions & options ( file.options().GetExtension(php) );
+	const string & namespace_ (options.namespace_());
+	const string & php_package_ ( file.options().GetExtension(php_package) );
+    const string & package_ ( php_package_.empty() ? file.package() : php_package_ );
+    if (!namespace_.empty()) {
+        printer.Outdent();
+        printer.Print("}");
+    }
+    
+}
+
 bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 				const string& parameter,
 				OutputDirectory* output_directory,
@@ -1025,6 +1078,11 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 	// Parse the options
 	const PHPFileOptions & options ( file->options().GetExtension(php) );
 	const string & namespace_ (options.namespace_());
+	const string & php_package_ ( file->options().GetExtension(php_package) );
+    const string & package_ ( php_package_.empty() ? file->package() : php_package_ );
+
+	bool php_multiple_files_ = file->options().GetExtension(php_multiple_files);
+
 
 	// Generate main file.
 	scoped_ptr<io::ZeroCopyOutputStream> output(
@@ -1034,37 +1092,27 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 	io::Printer printer(output.get(), '`');
 
 	try {
-		printer.Print(
-			"<?php\n"
-			"/** \n"
-			" * PHP Protocol Buffers generated from `filename`\n"
-			" *\n"
-			" * @category   Protobuf\n"
-			" * @package    `package`\n"
-			" * @author     Andrew Brampton https://github.com/bramp\n"
-			" * @author     Jeffrey Sambells <jsambells@wecreate.com>\n"
-			" * @link       http://github.com/iamamused/protoc-gen-php\n"
-			" */\n"
-			"\n"
-			"/** @see Protobuf */\n"
-			"require_once 'Protobuf.php';\n",
-			"filename", file->name().c_str(),
-			"package", file->package().c_str()
-		);
 
-		if (!namespace_.empty()) {
-			printer.Print("namespace `ns` {\n", "ns", namespace_.c_str());
-			printer.Indent();
-		}
-
-		PrintMessages  (printer, *file);
-		PrintEnums     (printer, *file);
-		PrintServices  (printer, *file);
-
-		if (!namespace_.empty()) {
-			printer.Outdent();
-			printer.Print("}");
-		}
+        if (!php_multiple_files_) {
+            PrintHeader    (printer, *file);
+            PrintMessages  (printer, *file);
+		    PrintEnums     (printer, *file);
+		    PrintServices  (printer, *file);
+            PrintFooter    (printer, *file);
+        } else {
+            PrintHeader    (printer, *file);
+            for (int i = 0; i < file->message_type_count(); ++i) {
+                PrintMessage(printer, *file->message_type(i));
+            }
+            for (int i = 0; i < file->enum_type_count(); ++i) {
+                PrintEnum(printer, *file->enum_type(i) );
+            }
+            for (int i = 0; i < file->service_count(); ++i) {
+                printer.Print("////\n//TODO Service\n////\n");
+            }
+            PrintFooter    (printer, *file);
+        }
+		
 
 	} catch (const char *msg) {
 		error->assign( msg );

@@ -8,13 +8,16 @@ class ProtobufTest extends PHPUnit_Framework_TestCase
     public static function setUpBeforeClass() {
         file_put_contents('addressbook.proto', '
         
-package Unit_Test;
+// import the php_options so we can define customs options for the compiler.  
+import "php_options.proto";
 
-option java_package = "com.example.tutorial";
-option java_outer_classname = "AddressBookProtos";
+package unit_test;
 
-//option php_package = "com.example.tutorial";
-//option php_outer_classname = "AddressBookProtos";
+option java_package = "com.example.unit_test";
+option java_outer_classname = "UnitTestAddressBookProtos";
+
+option (php_package) = "Unit_Test";
+option (php_multiple_files) = true;
 
 message Person {
   required string name = 1;
@@ -62,7 +65,7 @@ message AddressBook {
     public function testBuild() {
         $return = '';
         system('cd ' . dirname( __FILE__ ) .';', $return);
-        system('protoc -I. -I/usr/include --php_out . --plugin=protoc-gen-php=./protoc-gen-php addressbook.proto;', $return);
+        system('protoc -I. -I/usr/include -I/usr/include -I/usr/local/include --php_out . --plugin=protoc-gen-php=./protoc-gen-php addressbook.proto;', $return);
     }
     
     public function testUsage() {

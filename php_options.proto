@@ -1,3 +1,5 @@
+//http://code.google.com/apis/protocolbuffers/docs/proto.html#options
+
 import "google/protobuf/descriptor.proto";
 
 message PHPFileOptions {
@@ -6,5 +8,8 @@ message PHPFileOptions {
 }
 
 extend google.protobuf.FileOptions {
+	optional string php_package        = 1001;
+	optional bool   php_multiple_files = 1002 [default=false];
+
 	optional PHPFileOptions php = 1004;
 }
