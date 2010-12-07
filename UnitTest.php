@@ -63,9 +63,8 @@ message AddressBook {
         
         $out = join("\n",$out);
         
-        if (stristr(' warning:') || stristr(' error:')) {
-            echo $out;
-                $this->assertTrue(FALSE, $out);
+        if (stristr($out,' warning:') || stristr($out,' error:')) {
+            $this->assertTrue(FALSE, "\n$out\n");
         }
         
     }
