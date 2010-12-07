@@ -84,7 +84,7 @@ PHPCodeGenerator::~PHPCodeGenerator() {}
 string NonAlphaNumToCamelCaseImpl(const string& input, bool cap_next_letter, bool allow_underscore) {
   string result;
   // Note:  I distrust ctype.h due to locales.
-  for (int i = 0; i < input.size(); i++) {
+  for (int i = 0; i < (int)input.size(); i++) {
     if ('a' <= input[i] && input[i] <= 'z') {
       if (cap_next_letter) {
         result += input[i] + ('A' - 'a');
@@ -426,7 +426,8 @@ string arrayToPHPString(uint8 *a, size_t len) {
 
 	while(len > 0) {
 		uint8 c = *a++;
-		if ((c >= 0 && c <= 31) || c >= 127 ) {
+		//An unsigned variable cannot be less than zero. Thus your expression byte[i] >= 0 will always be true.
+		if (c <= 31 || c >= 127 ) {
 			p += sprintf(p, "\\x%02x", c);
 		} else if (c == '"'){
 			*p++ = '\\';
@@ -804,7 +805,7 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 		"public function validateRequired() {\n"
 	);
 	printer.Indent();
-	for (int i = 0; i < required_fields.size(); ++i) {
+	for (int i = 0; i < (int)required_fields.size(); ++i) {
 		printer.Print("if ($this->`name` === null) return false;\n",
 			"name", VariableName(*required_fields[i])
 		);
@@ -1059,8 +1060,6 @@ void PHPCodeGenerator::PrintFooter(io::Printer &printer, const FileDescriptor & 
 	// Parse the options
 	const PHPFileOptions & options ( file.options().GetExtension(php) );
 	const string & namespace_ (options.namespace_());
-	const string & php_package_ ( file.options().GetExtension(php_package) );
-    const string & package_ ( php_package_.empty() ? file.package() : php_package_ );
     if (!namespace_.empty()) {
         printer.Outdent();
         printer.Print("}");
@@ -1076,12 +1075,11 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 	string php_filename ( NonAlphaNumToCamelCaseImpl( file->name(), true, true ) + ".php" );
 
 	// Parse the options
-	const PHPFileOptions & options ( file->options().GetExtension(php) );
-	const string & namespace_ (options.namespace_());
-	const string & php_package_ ( file->options().GetExtension(php_package) );
-    const string & package_ ( php_package_.empty() ? file->package() : php_package_ );
-
-	bool php_multiple_files_ = file->options().GetExtension(php_multiple_files);
+	//const PHPFileOptions & options ( file->options().GetExtension(php) );
+	//const string & namespace_ (options.namespace_());
+	//const string & php_package_ ( file->options().GetExtension(php_package) );
+    //const string & package_ ( php_package_.empty() ? file->package() : php_package_ );
+	//bool php_multiple_files_ = file->options().GetExtension(php_multiple_files);
 
 
 	// Generate main file.
