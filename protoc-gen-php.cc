@@ -40,11 +40,11 @@ using namespace google::protobuf::internal;
 class PHPCodeGenerator : public CodeGenerator {
 	private:
 
-		void PrintMessage   (io::Printer &printer, const Descriptor & message) const;
-		void PrintMessages  (io::Printer &printer, const FileDescriptor & file) const;
+		void PrintMessage   (io::Printer &printer, const Descriptor & message, bool multiple) const;
+		void PrintMessages  (io::Printer &printer, const FileDescriptor & file, bool multiple) const;
 
-		void PrintEnum      (io::Printer &printer, const EnumDescriptor & e) const;
-		void PrintEnums     (io::Printer &printer, const FileDescriptor & file) const;
+		void PrintEnum      (io::Printer &printer, const EnumDescriptor & e, bool multiple) const;
+		void PrintEnums     (io::Printer &printer, const FileDescriptor & file, bool multiple) const;
 
 		void PrintService   (io::Printer &printer, const ServiceDescriptor & service) const;
 		void PrintServices  (io::Printer &printer, const FileDescriptor & file) const;
@@ -705,7 +705,7 @@ void PHPCodeGenerator::PrintMessageSize(io::Printer &printer, const Descriptor &
 	);
 }
 
-void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & message) const {
+void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & message, bool multiple) const {
 	// Parse the file options
 	const PHPFileOptions & options ( message.file()->options().GetExtension(php) );
 	bool skip_unknown = options.skip_unknown();
@@ -716,12 +716,12 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 	// Print nested messages
 	for (int i = 0; i < message.nested_type_count(); ++i) {
 		printer.Print("\n");
-		PrintMessage(printer, *message.nested_type(i));
+		PrintMessage(printer, *message.nested_type(i), multiple);
 	}
 
 	// Print nested enum
 	for (int i = 0; i < message.enum_type_count(); ++i) {
-		PrintEnum(printer, *message.enum_type(i) );
+		PrintEnum(printer, *message.enum_type(i) , multiple);
 	}
 
 	// Find out if we are a nested type, if so what kind
@@ -952,7 +952,26 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 	
 }
 
-void PHPCodeGenerator::PrintEnum(io::Printer &printer, const EnumDescriptor & e) const {
+void PHPCodeGenerator::PrintEnum(io::Printer &printer, const EnumDescriptor & e, bool multiple) const {
+
+    if (multiple)
+        // Messages
+        const FileDescriptor file = *e.file
+        for (int i = 0; i < file.message_type_count(); ++i) {
+            string php_filename ( NonAlphaNumToCamelCaseImpl( ClassName( *e.file.message_type(i) ), true, true ) + ".php" );
+            scoped_ptr<io::ZeroCopyOutputStream> output(
+                output_directory->Open(php_filename)
+            );
+            
+            printer(output.get(), '`');
+
+            PrintHeader  (mprinter, *e.file);
+        }
+            
+    }
+
+
+
 
 	printer.Print("// enum `full_name`\n"
 				  "class `name` {\n",
@@ -1002,15 +1021,15 @@ void PHPCodeGenerator::PrintEnum(io::Printer &printer, const EnumDescriptor & e)
 	printer.Print("}\n\n");
 }
 
-void PHPCodeGenerator::PrintMessages(io::Printer &printer, const FileDescriptor & file) const {
+void PHPCodeGenerator::PrintMessages(io::Printer &printer, const FileDescriptor & file, bool multiple) const {
 	for (int i = 0; i < file.message_type_count(); ++i) {
-		PrintMessage(printer, *file.message_type(i));
+		PrintMessage(printer, *file.message_type(i), multiple);
 	}
 }
 
-void PHPCodeGenerator::PrintEnums(io::Printer &printer, const FileDescriptor & file) const {
+void PHPCodeGenerator::PrintEnums(io::Printer &printer, const FileDescriptor & file, bool multiple) const {
 	for (int i = 0; i < file.enum_type_count(); ++i) {
-		PrintEnum(printer, *file.enum_type(i) );
+		PrintEnum(printer, *file.enum_type(i), multiple );
 	}
 }
 
@@ -1073,7 +1092,6 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 				OutputDirectory* output_directory,
 				string* error) const {
 
-	string php_filename ( NonAlphaNumToCamelCaseImpl( file->name(), true, true ) + ".php" );
 
 	// Parse the options
 	const PHPFileOptions & options ( file->options().GetExtension(php) );
@@ -1084,33 +1102,34 @@ bool PHPCodeGenerator::Generate(const FileDescriptor* file,
 	bool php_multiple_files_ = file->options().GetExtension(php_multiple_files);
 
 
-	// Generate main file.
-	scoped_ptr<io::ZeroCopyOutputStream> output(
-		output_directory->Open(php_filename)
-	);
-
-	io::Printer printer(output.get(), '`');
 
 	try {
 
         if (!php_multiple_files_) {
+
+            // Generate one file
+            
+            string php_filename ( NonAlphaNumToCamelCaseImpl( file->name(), true, true ) + ".php" );
+            scoped_ptr<io::ZeroCopyOutputStream> output(
+                output_directory->Open(php_filename)
+            );
+            io::Printer printer(output.get(), '`');
+
             PrintHeader    (printer, *file);
             PrintMessages  (printer, *file);
 		    PrintEnums     (printer, *file);
 		    PrintServices  (printer, *file);
             PrintFooter    (printer, *file);
+            
         } else {
-            PrintHeader    (printer, *file);
-            for (int i = 0; i < file->message_type_count(); ++i) {
-                PrintMessage(printer, *file->message_type(i));
-            }
-            for (int i = 0; i < file->enum_type_count(); ++i) {
-                PrintEnum(printer, *file->enum_type(i) );
-            }
-            for (int i = 0; i < file->service_count(); ++i) {
-                printer.Print("////\n//TODO Service\n////\n");
-            }
-            PrintFooter    (printer, *file);
+            
+            // Generate Multiple Files
+
+            // Passing null for th eprinter creaets a new printer internally as necessary.
+            //PrintMessages  (0, *file);
+		    PrintEnums     (0, *file);
+		    //PrintServices  (0, *file);
+
         }
 		
 
