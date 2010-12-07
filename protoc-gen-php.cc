@@ -919,6 +919,26 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 	// Class Insertion Point
 	printer.Print(
 		"\n"
+		"   function __get( $key ) {\n"
+		"       $m = 'get' . ucfirst($key);\n"
+		"       if (method_exists($this,$m)) return $this->$m();\n"
+		"       return null;\n"
+		"   }\n"
+		"   \n"
+		"   \n"
+		"   function __set( $key, $value ) {\n"
+		"       $m = 'set' . ucfirst($key);\n"
+		"       if (method_exists($this,$m)) return $this->$m($value);\n"
+		"   }\n"
+		"   \n"
+		"   \n"
+		"   function __call( $method, $args ) {\n"
+		"       $m = 'get' . ucfirst($method);\n"
+		"       if (method_exists($this,$m)) return $this->$m($args[0]);\n"
+		"       throw new Exception('Invalid method ' . $method);\n"
+		"   }\n"
+		"   \n"
+		"   \n"
 		"// @@protoc_insertion_point(class_scope:`full_name`)\n",
 		"full_name", message.full_name()
 	);

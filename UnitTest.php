@@ -78,8 +78,7 @@ message AddressBook {
         $book->addPerson($Person1);
 
         $Person2 = new Unit_Test_Person();
-        //$Person2->name = 'Person2';
-        $Person2->setName('Person2');
+        $Person2->name = 'Person2';
         $Person2->setId(2);
         $book->addPerson($Person2);
 
@@ -100,35 +99,33 @@ message AddressBook {
         $jeffrey->addPhone($phone);
         
         $phone = new Unit_Test_Person_PhoneNumber();
-        //$phone->number = '5195552345';
-        $phone->setNumber('5195552345');
-        //$phone->type = Unit_Test_Person_PhoneType::WORK;
-        $phone->setType(Unit_Test_Person_PhoneType::WORK);
+        $phone->number = '5195552345';
+        $phone->type = Unit_Test_Person_PhoneType::WORK;
         $jeffrey->addPhone($phone);
         
         # Run some tests to ensure things were set properly.
         $this->assertEquals(4,$book->getPersonCount());
         $person = $book->getPerson(0);
         $this->assertEquals("Person1",$person->getName());
-        //$this->assertEquals("Person1",$person->name);
+        $this->assertEquals("Person1",$person->name);
         $person = $book->getPerson(1);
         $this->assertEquals("Person2",$person->getName());
-        //$this->assertEquals("Person2",$person->name);
+        $this->assertEquals("Person2",$person->name);
         $person = $book->getPerson(2);
         $this->assertEquals("Person3",$person->getName());
-        //$this->assertEquals("Person3",$person->name);
+        $this->assertEquals("Person3",$person->name);
         $person = $book->getPerson(3);
         $this->assertEquals("Jeffrey",$person->getName());
-        //$this->assertEquals("Jeffrey",$person->name);
+        $this->assertEquals("Jeffrey",$person->name);
         $this->assertEquals(2,$person->getPhoneCount());
         $this->assertEquals("5195551234",$person->getPhone(0)->getNumber());
-        //$this->assertEquals("5195551234",$person->phone(0)->number);
+        $this->assertEquals("5195551234",$person->phone(0)->number);
         $this->assertEquals(Unit_Test_Person_PhoneType::MOBILE,$person->getPhone(0)->getType());
-        //$this->assertEquals(Unit_Test_Person_PhoneType::MOBILE,$person->phone(0)->type);
+        $this->assertEquals(Unit_Test_Person_PhoneType::MOBILE,$person->phone(0)->type);
         $this->assertEquals("5195552345",$person->getPhone(1)->getNumber());
-        //$this->assertEquals("5195552345",$person->phone(1)->number);
+        $this->assertEquals("5195552345",$person->phone(1)->number);
         $this->assertEquals(Unit_Test_Person_PhoneType::WORK,$person->getPhone(1)->getType());
-        //$this->assertEquals(Unit_Test_Person_PhoneType::WORK,$person->phone(1)->type);
+        $this->assertEquals(Unit_Test_Person_PhoneType::WORK,$person->phone(1)->type);
 
         
         $pbData = $book->__toString();
