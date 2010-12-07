@@ -140,12 +140,18 @@ message AddressBook {
 		$outfp = fopen($tmp, 'wb');
 
         $book->write($outfp);
+        fclose($outfp);
+
         $this->assertTrue(filesize($tmp) > 0);
 
 
         // Read it into a new addressbook
-        $newBook = new Unit_Test_AddressBook($outfp);
-        
+        $infp = fopen($tmp, 'rb');
+        $newBook = new Unit_Test_AddressBook($infp);
+		fclose($infp);
+		
+		unlink($tmp);
+		
         # Re-run some tests on the new book to ensure things match.
         $this->assertEquals(4,$newBook->getPersonCount());
         $this->assertEquals($book->getPerson(0)->getName(),$newBook->getPerson(0)->getName());
@@ -155,10 +161,10 @@ message AddressBook {
 
         $person = $book->getPerson(3);
         $this->assertEquals($book->getPerson(3)->getPhoneCount(),$newBook->getPerson(3)->getPhoneCount());
-        $this->assertEquals($book->getPerson(3)->phone(0)->getNumber(),$newBook->getPerson(3)->phone(0)->getNumber());
-        $this->assertEquals($book->getPerson(3)->phone(0)->getType(),$newBook->getPerson(3)->phone(0)->getType());
-        $this->assertEquals($book->getPerson(3)->phone(1)->getNumber(),$newBook->getPerson(3)->phone(1)->getNumber());
-        $this->assertEquals($book->getPerson(3)->phone(1)->getType(),$newBook->getPerson(3)->phone(1)->getType());
+        $this->assertEquals($book->getPerson(3)->getPhone(0)->getNumber(),$newBook->getPerson(3)->getPhone(0)->getNumber());
+        $this->assertEquals($book->getPerson(3)->getPhone(0)->getType(),$newBook->getPerson(3)->getPhone(0)->getType());
+        $this->assertEquals($book->getPerson(3)->getPhone(1)->getNumber(),$newBook->getPerson(3)->getPhone(1)->getNumber());
+        $this->assertEquals($book->getPerson(3)->getPhone(1)->getType(),$newBook->getPerson(3)->getPhone(1)->getType());
 
     }
     
