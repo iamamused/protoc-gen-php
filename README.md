@@ -22,16 +22,17 @@ On Debian you may need the install a few libraries with apt apt:
 ## Usage
 Once compiled you can use it via protoc like so:
 
- protoc -I. -I/usr/include --php_out . --plugin=protoc-gen-php=./protoc-gen-php your.proto
+	protoc -I. -I/usr/include --php_out . --plugin=protoc-gen-php=./protoc-gen-php your.proto
 
 This will generate the file "YourProto.php", which will encode and decode protocol buffer messages. When using the generated PHP code you must include the "protocolbuffers.inc.php" file.
 
 ## TODO's
-* Better documentation :)
+* Better documentation
 * Better exception handling
-* some kind of inheritance model to reduce generated PHP code
-* multi-file php output
-* php_ options such as php_package and php_multi_file
+* Some kind of inheritance model to reduce generated PHP code
+* option (php_multiple_files) support.
+* option (php_package) support
+* `make install` to a bash wrapper so that we can do something like `protocphp your.proto`  
 
 ## Authors
 * Original source by Andrew Brampton (c) 2010 [http://github.com/bramp/protoc-gen-php](http://github.com/bramp/protoc-gen-php)
