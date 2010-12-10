@@ -8,7 +8,7 @@ class ProtobufTest extends PHPUnit_Framework_TestCase
     public static function setUpBeforeClass() {
         file_put_contents('addressbook.proto', '
         
-// import the php_options so we can define customs options for the compiler.  
+// import the php_options so we can define custom options for the compiler.  
 import "php_options.proto";
 
 package unit_test;
@@ -29,6 +29,10 @@ message Person {
     HOME = 1;
     WORK = 2;
   }
+
+	message Unused {
+	  required string test = 1;
+	}
 
   message PhoneNumber {
     required string number = 1;

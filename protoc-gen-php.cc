@@ -4,14 +4,14 @@
  *
  * TODO
  *  Support the packed option
- *  Lots of optimisations
+ *  Lots of optimizations
  *  Extensions
  *  Services
  *  Packages
  *  Better validation (add code to check setted values are valid)
  *  option optimize_for = CODE_SIZE/SPEED;
  */
-#include "strutil.h" // TODO This header is from the offical protobuf source, but it is not normally installed
+#include "strutil.h" // TODO This header is from the official protobuf source, but it is not normally installed
 
 #include <map>
 #include <string>
@@ -738,8 +738,9 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 				break;
 			}
 		}
-		if (parentField->type() == FieldDescriptor::TYPE_GROUP)
+		if (parentField != NULL && parentField->type() == FieldDescriptor::TYPE_GROUP) {
 			type = "group";
+		}
 	}
 
 	// Start printing the message
