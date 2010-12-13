@@ -148,20 +148,22 @@ message AddressBook {
 
          # Serialize the data to a .pb format.
         $tmp = dirname(__FILE__) . '/addressbook.pb';
-		$outfp = fopen($tmp, 'wb');
-
+				$outfp = fopen($tmp, 'wb');
         $book->write($outfp);
         fclose($outfp);
 
         $this->assertTrue(filesize($tmp) > 0);
 
+				// check that the string output is correct
+				$string = $book->getPbString();
+				$this->assertEquals($string,file_get_contents($tmp));
 
         // Read it into a new addressbook
         $infp = fopen($tmp, 'rb');
         $newBook = new Unit_Test_AddressBook($infp);
-		fclose($infp);
+				fclose($infp);
 		
-		unlink($tmp);
+				unlink($tmp);
 		
         # Re-run some tests on the new book to ensure things match.
         $this->assertEquals(4,$newBook->getPersonCount());
@@ -176,7 +178,9 @@ message AddressBook {
         $this->assertEquals($book->getPerson(3)->getPhone(0)->getType(),$newBook->getPerson(3)->getPhone(0)->getType());
         $this->assertEquals($book->getPerson(3)->getPhone(1)->getNumber(),$newBook->getPerson(3)->getPhone(1)->getNumber());
         $this->assertEquals($book->getPerson(3)->getPhone(1)->getType(),$newBook->getPerson(3)->getPhone(1)->getType());
-
+        
+        
+          
     }
     
     

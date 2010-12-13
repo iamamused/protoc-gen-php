@@ -603,6 +603,23 @@ void PHPCodeGenerator::PrintMessageWrite(io::Printer &printer, const Descriptor 
 
 	printer.Outdent();
 	printer.Print("}\n");
+	
+	// Write
+	printer.Print(
+		"\n"
+		"function getPbString() {\n"
+	);
+	printer.Indent();
+
+	printer.Print("$fp = fopen('php://memory', 'w+b');\n");
+	printer.Print("$this->write($fp);\n");
+	printer.Print("rewind($fp);\n");
+	printer.Print("$out = stream_get_contents($fp);\n");
+	printer.Print("fclose($fp);\n");
+	printer.Print("return $out;\n");
+	printer.Outdent();
+	printer.Print("}\n");
+	
 }
 
 void PHPCodeGenerator::PrintMessageSize(io::Printer &printer, const Descriptor & message) const {
