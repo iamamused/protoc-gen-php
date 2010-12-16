@@ -404,7 +404,7 @@ void PHPCodeGenerator::PrintMessageRead(io::Printer &printer, const Descriptor &
 	printer.Outdent();
 	printer.Print(
 		"  if (!$this->validateRequired())\n"
-		"    throw new Exception('Required fields are missing');\n"
+		"    throw new Exception('Required field is missing [' . $this->_missingField . ']');\n"
 		"}\n"
 	);
 }
@@ -823,8 +823,9 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 		"public function validateRequired() {\n"
 	);
 	printer.Indent();
+	printer.Print("$this->_missingField = '';\n");
 	for (int i = 0; i < (int)required_fields.size(); ++i) {
-		printer.Print("if ($this->`name` === null) return false;\n",
+		printer.Print("if ($this->`name` === null) { $this->_missingField = '`name` '; return false; }\n",
 			"name", VariableName(*required_fields[i])
 		);
 	}
