@@ -479,7 +479,7 @@ void PHPCodeGenerator::PrintMessageWrite(io::Printer &printer, const Descriptor 
 
 	printer.Print(
 		"if (!$this->validateRequired())\n"
-		"  throw new Exception('Required fields are missing');\n"
+		"  throw new Exception('Required field is missing [' . $this->_missingField . ']');\n"
 	);
 
 	for (int i = 0; i < message.field_count(); ++i) {
