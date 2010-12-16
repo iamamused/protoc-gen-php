@@ -820,6 +820,7 @@ void PHPCodeGenerator::PrintMessage(io::Printer &printer, const Descriptor & mes
 	// Validate that the required fields are included
 	printer.Print(
 		"\n"
+		"private $_missingField;"
 		"public function validateRequired() {\n"
 	);
 	printer.Indent();
