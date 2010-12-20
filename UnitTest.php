@@ -40,6 +40,8 @@ message Person {
   }
 
   repeated PhoneNumber phone = 4;
+
+ optional sint32 negative = 6;
 }
 
 // Our address book file is just one of these.
@@ -52,6 +54,7 @@ message AddressBook {
     
     
     public static function tearDownAfterClass() {
+	    	//return;
         $return = ''; $out = array();
         exec('cd ' . escapeshellarg(dirname( __FILE__ )) .';', $out, $return);
         exec('make clean;', $return);
@@ -60,6 +63,7 @@ message AddressBook {
     }
     
     public function testMake() {
+        //return;
         $return = ''; $out = array();
         exec('cd ' . escapeshellarg(dirname( __FILE__ )) .';', $out, $return);
         exec('make clean;', $out, $return);
@@ -74,13 +78,82 @@ message AddressBook {
     }
 
     public function testBuild() {
+    //return;
         $return = ''; $out = array();
         exec('cd ' . escapeshellarg(dirname( __FILE__ )) .';', $out, $return);
         exec('protoc -I. -I/usr/include -I/usr/include -I/usr/local/include --php_out . --plugin=protoc-gen-php=./protoc-gen-php addressbook.proto;', $out, $return);
     }
     
-    public function testUsage() {
     
+    public function testNegative() {
+    
+        require_once('AddressbookProto.php');
+        
+        # Generate a new message 
+        $book = new Unit_Test_AddressBook();
+
+				$id = 1;
+				
+				$p = new Unit_Test_Person();
+				$p->setName('Person');
+				$p->setId($id++);
+				$p->setNegative(-123000000);
+				$book->addPerson($p);
+				
+				$p = new Unit_Test_Person();
+				$p->setName('Person');
+				$p->setId($id++);
+				$p->setNegative(-100);
+				$book->addPerson($p);
+				$p = new Unit_Test_Person();
+				$p->setName('Person');
+				$p->setId($id++);
+				$p->setNegative(-10);
+				$book->addPerson($p);
+				
+				/*
+				
+				$p = new Unit_Test_Person();
+				$p->setName('Person');
+				$p->setId($id++);
+				$p->setNegative(123000000);
+				$book->addPerson($p);
+				
+				$p = new Unit_Test_Person();
+				$p->setName('Person');
+				$p->setId($id++);
+				$p->setNegative(100);
+				$book->addPerson($p);
+				
+				$p = new Unit_Test_Person();
+				$p->setName('Person');
+				$p->setId($id++);
+				$p->setNegative(1);
+				$book->addPerson($p);
+*/
+
+				$pbData = $book->__toString();
+				$this->assertNotEmpty((string)$book);
+				$this->assertEquals((string)$book,$pbData);
+        
+         # Serialize the data to a .pb format.
+        $tmp = dirname(__FILE__) . '/addressbook.pb';
+				$outfp = fopen($tmp, 'wb');
+        $book->write($outfp);
+        fclose($outfp);
+
+				// check that the string output is correct
+				//var_dump($book->getPbString(),file_get_contents('python/addressbook.pb'));
+
+        // Read it into a new addressbook
+        $infp = fopen($tmp, 'rb');
+        $newBook = new Unit_Test_AddressBook($infp);
+				fclose($infp);		
+    		
+    }
+    
+    public function testUsage() {
+    		return;
         require_once('AddressbookProto.php');
         
         # Generate a new message 
@@ -89,6 +162,8 @@ message AddressBook {
         $Person1 = new Unit_Test_Person();
         $Person1->setName('Person1');
         $Person1->setId(1);
+				$Person1->setNegative(-100);
+
         $book->addPerson($Person1);
 
         $Person2 = new Unit_Test_Person();
@@ -120,8 +195,10 @@ message AddressBook {
         # Run some tests to ensure things were set properly.
         $this->assertEquals(4,$book->getPersonCount());
         $person = $book->getPerson(0);
-        $this->assertEquals("Person1",$person->getName());
-        $this->assertEquals("Person1",$person->name);
+				$this->assertEquals("Person1",$person->getName());
+				$this->assertEquals(-100,$person->negative);
+				$this->assertEquals(-100,$person->getNegative());
+				$this->assertEquals("Person1",$person->name);
         $person = $book->getPerson(1);
         $this->assertEquals("Person2",$person->getName());
         $this->assertEquals("Person2",$person->name);
@@ -158,16 +235,17 @@ message AddressBook {
 				$string = $book->getPbString();
 				$this->assertEquals($string,file_get_contents($tmp));
 
+				$tmp = 'addressbook.py.pb';
         // Read it into a new addressbook
         $infp = fopen($tmp, 'rb');
         $newBook = new Unit_Test_AddressBook($infp);
-				fclose($infp);
-		
-				unlink($tmp);
+				fclose($infp);		
+				//unlink($tmp);
 		
         # Re-run some tests on the new book to ensure things match.
         $this->assertEquals(4,$newBook->getPersonCount());
         $this->assertEquals($book->getPerson(0)->getName(),$newBook->getPerson(0)->getName());
+        $this->assertEquals($book->getPerson(0)->getNegative(),$newBook->getPerson(0)->getNegative());
         $this->assertEquals($book->getPerson(1)->getName(),$newBook->getPerson(1)->getName());
         $this->assertEquals($book->getPerson(2)->getName(),$newBook->getPerson(2)->getName());
         $this->assertEquals($book->getPerson(3)->getName(),$newBook->getPerson(3)->getName());

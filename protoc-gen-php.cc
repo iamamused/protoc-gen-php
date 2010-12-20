@@ -651,6 +651,8 @@ void PHPCodeGenerator::PrintMessageSize(io::Printer &printer, const Descriptor &
 					command = "$size += `tag`;\n";
 				} else {
 					command = "$size += `tag` + `ns`Protobuf::size_varint(`var`);\n";
+					// This is a hack for negative integers. It works, but needs a better implementation.
+					command += "if (`var` < 0) $size += ceil(strlen(abs(`var`))/4);\n";
 				}
 				break;
 

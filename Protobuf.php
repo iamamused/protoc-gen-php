@@ -98,6 +98,21 @@ class Protobuf {
 		} while ($i != 0);
 		return $len;
 */
+
+
+//if ($i < 0) return 10;
+if ($i <= 0x7f) return 1;
+if ($i <= 0x3fff) return 2;
+if ($i <= 0x1fffff) return 3;
+if ($i <= 0xfffffff) return 4;
+if ($i <= 0x7ffffffff) return 5;
+if ($i <= 0x3ffffffffff) return 6;
+if ($i <= 0x1ffffffffffff) return 7;
+if ($i <= 0xffffffffffffff) return 8;
+if ($i <= 0x7fffffffffffffff) return 9;
+return 10;
+
+/*
 		// TODO Change to a binary search
 		if ($i < 0x80)
 			return 1;
@@ -117,6 +132,7 @@ class Protobuf {
 			return 8;
 		if ($i < 0x8000000000000000)
 			return 9;
+			*/
 	}
 
 	/**
@@ -156,14 +172,18 @@ class Protobuf {
 		return $i;
 	}
 
-	public static function read_double($fp){throw "I've not coded it yet Exception";}
-	public static function read_float ($fp){throw "I've not coded it yet Exception";}
-	public static function read_uint64($fp){throw "I've not coded it yet Exception";}
-	public static function read_int64 ($fp){throw "I've not coded it yet Exception";}
-	public static function read_uint32($fp){throw "I've not coded it yet Exception";}
-	public static function read_int32 ($fp){throw "I've not coded it yet Exception";}
-	public static function read_zint32($fp){throw "I've not coded it yet Exception";}
-	public static function read_zint64($fp){throw "I've not coded it yet Exception";}
+	public static function read_double($fp){throw new Exception("I've not coded it yet Exception");}
+	public static function read_float ($fp){throw new Exception("I've not coded it yet Exception");}
+	public static function read_uint64($fp){throw new Exception("I've not coded it yet Exception");}
+	public static function read_int64 ($fp){throw new Exception("I've not coded it yet Exception");}
+	public static function read_uint32($fp){throw new Exception("I've not coded it yet Exception");}
+	public static function read_int32 ($fp){throw new Exception("I've not coded it yet Exception");}
+	public static function read_zint32($fp){
+		//http://code.google.com/p/protobuf/source/browse/trunk/python/google/protobuf/internal/encoder.py?r=361
+		//line 356
+		return self::zigZagDecode(self::read_varint($fp));
+	}
+	public static function read_zint64($fp){throw new Exception("I've not coded it yet Exception");}
 
 	/**
 	 * Writes a varint to $fp
@@ -172,32 +192,72 @@ class Protobuf {
 	 * @param $i The int to encode
 	 * @return The number of bytes written
 	 */
-	public static function write_varint($fp, $i) {
+	public static function write_varint($fp, $value) {
+	
+		//echo "write_varint:$value\n;";
+	
 		$len = 0;
-		do {
-			$v = $i & 0x7F;
-			$i = $i >> 7;
+		//http://code.google.com/p/protobuf/source/browse/trunk/python/google/protobuf/internal/encoder.py?r=361
+		//line 341
+		//if ($value < 0) $value += (1<<64);
 
-			if ($i != 0)
-				$v |= 0x80;
+		$bits = $value & 0x7F;
+		$value = $value >> 7;
 
-			if (fwrite($fp, chr($v)) !== 1)
+		while ($value > 0) {
+			if (fwrite($fp, chr(0x80|$bits)) !== 1) {
 				throw new Exception("write_varint(): Error writing byte");
-
+			}
+			$bits = $value & 0x7F;
+			$value = $value >> 7;	
 			$len++;
-		} while ($i != 0);
-
+		}
+		if (fwrite($fp, chr($bits)) !== 1) {
+    	throw new Exception("write_varint(): Error writing byte");
+    }
 		return $len;
 	}
 
-	public static function write_double($fp, $d){throw "I've not coded it yet Exception";}
-	public static function write_float ($fp, $f){throw "I've not coded it yet Exception";}
-	public static function write_uint64($fp, $i){throw "I've not coded it yet Exception";}
-	public static function write_int64 ($fp, $i){throw "I've not coded it yet Exception";}
-	public static function write_uint32($fp, $i){throw "I've not coded it yet Exception";}
-	public static function write_int32 ($fp, $i){throw "I've not coded it yet Exception";}
-	public static function write_zint32($fp, $i){throw "I've not coded it yet Exception";}
-	public static function write_zint64($fp, $i){throw "I've not coded it yet Exception";}
+	public static function write_double($fp, $d){throw new Exception("I've not coded it yet Exception");}
+	public static function write_float ($fp, $f){throw new Exception("I've not coded it yet Exception");}
+	public static function write_uint64($fp, $i){throw new Exception("I've not coded it yet Exception");}
+	public static function write_int64 ($fp, $i){throw new Exception("I've not coded it yet Exception");}
+	public static function write_uint32($fp, $i){throw new Exception("I've not coded it yet Exception");}
+	public static function write_int32 ($fp, $i){throw new Exception("I've not coded it yet Exception");}
+	
+	public static function write_zint32($fp, $value){
+		//http://code.google.com/p/protobuf/source/browse/trunk/python/google/protobuf/internal/encoder.py?r=361
+		//line 356
+		//if ($value < 0) $value += (1<<64);
+		$value = self::zigZagEncode($value);
+		return self::write_varint($fp, $value);
+	}
+	
+	public static function write_zint64($fp, $i){throw new Exception("I've not coded it yet Exception");}
+
+
+
+	public static function zigZagEncode($value) {
+	  //ZigZag Transform:  Encodes signed integers so that they can be
+	  //effectively used with varint encoding.  See wire_format.h for
+	  //more details.
+	  if ($value >= 0) {
+	    return $value << 1;
+	  }
+	  return ($value << 1) ^ (~0);
+	}
+	
+	public static function zigZagDecode($value) {
+	  //Inverse of ZigZagEncode()."""
+	  if (! $value & 0x1) {
+	    return $value >> 1;
+	  }
+	  return ($value >> 1) ^ (~0);
+	}
+
+
+
+
 
 	/**
 	 * Seek past a varint
