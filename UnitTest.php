@@ -97,19 +97,15 @@ message AddressBook {
 				$p = new Unit_Test_Person();
 				$p->setName('Person');
 				$p->setId($id++);
-				$p->setNegative(-123000000);
+				$p->setNegative(43480333);
 				$book->addPerson($p);
 				
 				$p = new Unit_Test_Person();
 				$p->setName('Person');
 				$p->setId($id++);
-				$p->setNegative(-100);
+				$p->setNegative(-80544722);
 				$book->addPerson($p);
 				$p = new Unit_Test_Person();
-				$p->setName('Person');
-				$p->setId($id++);
-				$p->setNegative(-10);
-				$book->addPerson($p);
 				
 				/*
 				

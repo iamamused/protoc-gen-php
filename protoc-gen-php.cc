@@ -649,10 +649,10 @@ void PHPCodeGenerator::PrintMessageSize(io::Printer &printer, const Descriptor &
 				if (field.type() == FieldDescriptor::TYPE_BOOL) {
 					tag++; // A bool will always take 1 byte
 					command = "$size += `tag`;\n";
+				} else if (field.type() == FieldDescriptor::TYPE_SINT32) {
+					command = "$size += `tag` + `ns`Protobuf::size_varint(Protobuf::zigZagEncode(`var`));\n";
 				} else {
 					command = "$size += `tag` + `ns`Protobuf::size_varint(`var`);\n";
-					// This is a hack for negative integers. It works, but needs a better implementation.
-					command += "if (`var` < 0) $size += ceil(strlen(abs(`var`))/4);\n";
 				}
 				break;
 
